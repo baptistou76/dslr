@@ -2,12 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
-from comparate import compare_homogeneous
-from calculs import calculate_max
+from DSLR.comparate import compare_similar
 
 
 def main():
-
     try:
         if len(sys.argv) != 2:
             raise ValueError("Please provide a CSV file.")
@@ -21,47 +19,47 @@ def main():
 
         print("CSV file successfully loaded.")
 
-        feature = compare_homogeneous(data)
+        if "Hogwarts House" not in data.columns:
+            raise ValueError("Missing 'Hogwarts House' column.")
 
-        print(f"Most homogeneous feature: {feature}")
+        feature_1, feature_2 = compare_similar(data)
 
-        houses = data["Hogwarts House"].dropna().unique()
+        print(f"Similar features: {feature_1} and {feature_2}")
+
+        values = data[
+            ["Hogwarts House", feature_1, feature_2]
+        ].dropna()
 
         plt.figure(figsize=(10, 6))
 
-        for house in houses:
+        for house in values["Hogwarts House"].unique():
+            house_values = values[
+                values["Hogwarts House"] == house
+            ]
 
-            values = data[data["Hogwarts House"] == house][feature]
-            values = values.dropna()
-
-            plt.hist(
-                values,
-                bins=30,
+            plt.scatter(
+                house_values[feature_1],
+                house_values[feature_2],
                 alpha=0.5,
                 label=house
             )
 
-        plt.title(feature)
-        plt.xlabel("Score")
-        plt.ylabel("Number of students")
-        plt.legend()
+        plt.title("Most correlated features")
+        plt.xlabel(feature_1)
+        plt.ylabel(feature_2)
+        plt.legend(title="Hogwarts House")
         plt.tight_layout()
-
         plt.show()
 
     except FileNotFoundError:
         print("Error: file not found.")
-
     except pd.errors.EmptyDataError:
         print("Error: the CSV file is empty.")
-
     except ValueError as error:
         print(f"Error: {error}")
-
     except Exception as error:
         print(f"Error: {error}")
 
 
 if __name__ == "__main__":
     main()
-    

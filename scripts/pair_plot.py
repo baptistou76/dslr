@@ -5,7 +5,6 @@ import sys
 
 
 def main():
-
     try:
         if len(sys.argv) != 2:
             raise ValueError("Please provide a CSV file.")
@@ -34,7 +33,7 @@ def main():
                 "Transfiguration",
                 "Care of Magical Creatures",
                 "Charms",
-                "Flying"                
+                "Flying",
             ],
             [
                 "Herbology",
@@ -44,8 +43,28 @@ def main():
             ],
         ]
 
+        if "Hogwarts House" not in data.columns:
+            raise ValueError("Missing 'Hogwarts House' column.")
+
         for group in groups:
-            pair_data = data[["Hogwarts House"] + group].dropna()
+            missing = [
+                feature
+                for feature in group
+                if feature not in data.columns
+            ]
+
+            if missing:
+                raise ValueError(
+                    f"Missing features: {', '.join(missing)}"
+                )
+
+            pair_data = data[
+                ["Hogwarts House"] + group
+            ].dropna()
+
+            if pair_data.empty:
+                print(f"No usable data for group: {group}")
+                continue
 
             sns.pairplot(
                 pair_data,
@@ -56,13 +75,10 @@ def main():
 
     except FileNotFoundError:
         print("Error: file not found.")
-
     except pd.errors.EmptyDataError:
         print("Error: the CSV file is empty.")
-
     except ValueError as error:
         print(f"Error: {error}")
-
     except Exception as error:
         print(f"Error: {error}")
 
