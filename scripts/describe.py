@@ -1,82 +1,80 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import sys
-import csv
 
-from calculs import (
-    calculate_percentile,
-    calculate_count,
-    calculate_min,
-    calculate_max,
-    calculate_mean,
-    calculate_std
-)
+import sys
+
+import pandas as pd
+
+from DSLR.math import Math
 
 
 def main():
+    if len(sys.argv) != 2:
+        print("Usage: python -m scripts.describe <file.csv>")
+        return 1
+
+    filename = sys.argv[1]
+
+    if not filename.lower().endswith(".csv"):
+        print("Error: the file must be a CSV file.")
+        return 1
 
     try:
-        if len(sys.argv) != 2:
-            raise ValueError("Please provide a CSV file.")
-
-        filename = sys.argv[1]
-
-        if not filename.lower().endswith(".csv"):
-            raise ValueError("The file must be a CSV file.")
-
         data = pd.read_csv(filename)
-
         print("CSV file successfully loaded.")
 
-        numeric_columns = data.select_dtypes(include=np.number).columns
-        numeric_columns = numeric_columns.drop("Index")
+        if "Index" in data.columns:
+            data = data.drop(columns=["Index"])
+
+        numeric_columns = data.select_dtypes(
+            include="number"
+        ).columns
+
+        if len(numeric_columns) == 0:
+            raise ValueError("No numeric columns were found.")
 
         results = {}
 
-        for features in numeric_columns:
+        for feature in numeric_columns:
+            raw_values = data[feature]
+            valid_values = Math._valid_values(raw_values)
 
-            values = data[features]
-
-            count = calculate_count(values)
-            mean = calculate_mean(values)
-            std = calculate_std(values)
-            minimum = calculate_min(values)
-            maximum = calculate_max(values)
-
-            percentile_25 = calculate_percentile(values, 25)
-            percentile_50 = calculate_percentile(values, 50)
-            percentile_75 = calculate_percentile(values, 75)
-
-            results[features] = {
-                "Count": count,
-                "Mean": mean,
-                "Std": std,
-                "Min": minimum,
-                "25%": percentile_25,
-                "50%": percentile_50,
-                "75%": percentile_75,
-                "Max": maximum
+            results[feature] = {
+                "Count": Math.count(raw_values),
+                "Mean": Math.mean(raw_values),
+                "Std": Math.std(raw_values),
+                "Variance": Math.variance(raw_values),
+                "Min": Math.min(raw_values),
+                "25%": Math.percentile(raw_values, 25),
+                "50%": Math.percentile(raw_values, 50),
+                "75%": Math.percentile(raw_values, 75),
+                "Max": Math.max(raw_values),
+                "Missing": len(raw_values) - len(valid_values),
+                "Range": Math.range(raw_values),
+                "Unique": Math.unique(raw_values),
             }
 
         results_table = pd.DataFrame(results)
 
-        results_table.loc["Count"] = results_table.loc["Count"].astype(int)
+        for row in ("Count", "Missing", "Unique"):
+            results_table.loc[row] = (
+                results_table.loc[row].astype(int)
+            )
 
-        print(results_table)
+        print(results_table.to_string())
+
+        return 0
 
     except FileNotFoundError:
         print("Error: file not found.")
+        return 1
 
     except pd.errors.EmptyDataError:
         print("Error: the CSV file is empty.")
+        return 1
 
-    except ValueError as error:
+    except (ValueError, KeyError) as error:
         print(f"Error: {error}")
-
-    except Exception as error:
-        print(f"Error: {error}")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

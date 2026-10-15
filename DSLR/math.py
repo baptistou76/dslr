@@ -147,3 +147,28 @@ class Math:
             return 0.0
 
         return numerator / denominator
+    
+    @staticmethod
+    def variance(values):
+        """Calculate population variance."""
+        valid_values = Math._valid_values(values)
+        if not valid_values:
+            raise ValueError(
+                "Cannot calculate variance: no valid values."
+            )
+        average = Math.mean(valid_values)
+        squared_differences = [
+            (value - average) ** 2
+            for value in valid_values
+        ]
+        return sum(squared_differences) / len(valid_values)
+    
+    @staticmethod
+    def range(values):
+        """Calculate the range between maximum and minimum"""
+        return Math.max(values) - Math.min(values)
+    
+    @staticmethod
+    def unique(values):
+        """Count distinct valid numeric values."""
+        return len(set(Math._valid_values(values)))

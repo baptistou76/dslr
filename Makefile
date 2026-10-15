@@ -9,7 +9,7 @@ TEST_CSV = datasets/dataset_test.csv
 MODEL = logreg_model.npz
 PREDICTIONS = houses.csv
 
-.PHONY: start train graph predict evaluate validate clean fclean restart
+.PHONY: start describe train graph predict evaluate validate clean fclean restart
 
 # Create the virtual environment and install dependencies
 start:
@@ -23,6 +23,10 @@ start:
 	@echo "[3/3] Installing dependencies..."
 	@$(PIP) install -r requirements.txt --progress-bar on
 	@echo "Setup completed successfully!"
+
+# Show the csv file content like the real describe function
+describe:
+	@$(PYTHON) -m scripts.describe $(TRAIN_CSV)
 
 # Generate graph
 graph:
