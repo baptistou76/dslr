@@ -9,10 +9,10 @@ TEST_CSV = datasets/dataset_test.csv
 MODEL = logreg_model.npz
 PREDICTIONS = houses.csv
 
-.PHONY: start describe train graph predict evaluate validate clean fclean restart
+.PHONY: install describe train graph predict evaluate validate clean fclean re
 
 # Create the virtual environment and install dependencies
-start:
+install:
 	@echo "========================================"
 	@echo "       DSLR - Project setup"
 	@echo "========================================"
@@ -66,5 +66,5 @@ fclean: clean
 	@rm -rf $(VENV)
 	@echo "Full cleanup completed."
 
-restart: fclean start
-	@echo "DSLR is restarted !"
+re: fclean install
+	@echo "DSLR is re-installed !"
